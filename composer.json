@@ -1,8 +1,8 @@
 {
-    "name": "ramazantufekci/Contacts",
+    "name": "ramazantufekci/contacts",
     "type": "library",
     "description": "Contacts List",
-    "homepage": "https://github.com/ramazantufekci/Contacts",
+    "homepage": "https://github.com/ramazantufekci/contacts",
     "keywords": ["Contacts", "php"],
     "license": "MIT",
     "authors": [
