@@ -1,6 +1,5 @@
 {
     "name": "ramazantufekci/contacts",
-	"version" : "1.0.0",
     "type": "library",
     "description": "Contacts List",
     "homepage": "https://github.com/ramazantufekci/contacts",
