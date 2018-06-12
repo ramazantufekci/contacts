@@ -1,11 +1,11 @@
 ---
-name: Bug report
-about: Create a report to help us improve
+isim: Bug report
+Konu: Geliştirmemize yardımcı olacak bir rapor oluşturun.
 
 ---
 
-**Describe the bug**
-A clear and concise description of what the bug is.
+**Hataları belirtin**
+Bulduğunuz hatayı satır numarası veya ekran görüntüsüyle paylaşın.
 
 **To Reproduce**
 Steps to reproduce the behavior:
