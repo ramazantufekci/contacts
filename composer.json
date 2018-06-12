@@ -1,6 +1,6 @@
 {
     "name": "ramazantufekci/contacts",
-    "type": "library",
+    "type": "Webcontacts",
     "description": "Contacts List",
     "homepage": "https://github.com/ramazantufekci/contacts",
     "keywords": ["Contacts", "php"],
