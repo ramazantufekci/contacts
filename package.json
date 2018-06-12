@@ -1,0 +1,27 @@
+{
+	"name": "contacts",
+	  "version": "1.0.0",
+	  "description": "Contacts List",
+	  "homepage": "https://github.com/ramazantufekci/contacts",
+	  "keywords": [
+		"Contacts",
+		"admin",
+		"php"
+	  ],
+	  "license": "MIT",
+	  "author": "Ramazan TÜFEKÇİ",
+	  "contributors": [
+		{
+		  "name": "Ramazan TÜFEKÇİ",
+		  "email": "ramazan@radyobilge.com",
+		  "url": "https://www.ramazantufekci.com"
+		}
+	  ],
+	  "repository": {
+		"type": "git",
+		"url": "https://github.com/ramazantufekci/contacts.git"
+	  },
+	  "bugs": {
+		"url": "https://github.com/ramazantufekci/contacts/issues"
+	   }
+}
