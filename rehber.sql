@@ -5,7 +5,6 @@
 -- Anamakine: 127.0.0.1
 -- Üretim Zamanı: 09 Haz 2018, 09:48:50
 -- Sunucu sürümü: 5.6.17
--- PHP Sürümü: 5.5.12
 
 SET SQL_MODE = "NO_AUTO_VALUE_ON_ZERO";
 SET time_zone = "+00:00";
