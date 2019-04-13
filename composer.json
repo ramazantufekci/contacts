@@ -2,7 +2,7 @@
     "name": "ramazantufekci/contacts",
     "type": "Webcontacts",
     "description": "Contacts List",
-    "version" : "1.0.1",
+    "version" : "1.0.0",
     "homepage": "https://github.com/ramazantufekci/contacts",
     "keywords": ["Contacts", "php"],
     "license": "MIT",
