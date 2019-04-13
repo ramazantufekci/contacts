@@ -6,7 +6,6 @@
     "homepage": "https://github.com/ramazantufekci/contacts",
     "keywords": ["Contacts", "php"],
     "license": "MIT",
-    "minimum-stability": "stable",
     "authors": [
         {
             "name": "Ramazan TÜFEKCİ",
@@ -21,5 +20,10 @@
         "psr-4": {
             "DRContacts\\": "src/"
         }
+    },
+    "minimum-stability": "dev",
+    "extra": {
+        "branch-alias": {
+            "dev-master": "1.0-dev"
     }
 }
