@@ -6,7 +6,7 @@
     "homepage": "https://github.com/ramazantufekci/contacts",
     "keywords": ["Contacts", "php"],
     "license": "MIT",
-    "minimum-stability": "dev",
+
     "authors": [
         {
             "name": "Ramazan TÜFEKCİ",
