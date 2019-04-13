@@ -3,7 +3,6 @@
 	  "version": "1.0.0",
 	  "description": "Contacts List",
 	  "homepage": "https://github.com/ramazantufekci/contacts",
-	  "minimum-stability": "dev",
 	  "keywords": [
 		"Contacts",
 		"admin",
