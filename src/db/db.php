@@ -1,59 +1,86 @@
 <?php
+
 namespace DRContacts\db;
+
 use DRContacts\config\config;
+use PDO;
+use PDOException;
+
 class db
 {
-	private $baglanti;
+	private ?PDO $baglanti = null;
 	public function __construct()
 	{
 		$c = new config();
-		$this->baglanti = new \mysqli($c->host,$c->username,$c->password,$c->database);
-		$this->baglanti->set_charset("utf8");
+		$dsn = "mysql:host={$c->host};dbname={$c->database};charset=utf8mb4";
+		$options = [
+			PDO::ATTR_ERRMODE            => PDO::ERRMODE_EXCEPTION, // Hataları istisna olarak fırlat
+			PDO::ATTR_DEFAULT_FETCH_MODE => PDO::FETCH_OBJ,       // Varsayılan olarak nesne döndür
+			PDO::ATTR_EMULATE_PREPARES   => false,                // Gerçek prepared statements kullan (Güvenlik için kritik)
+		];
+
+		try {
+			$this->baglanti = new PDO($dsn, $c->username, $c->password, $options);
+		} catch (PDOException $e) {
+			// Güvenlik nedeniyle ham hatayı dışarı sızdırmıyoruz
+			var_export($e->getMessage());
+			die("Veritabanı bağlantı hatası oluştu.");
+		}
 	}
-	
+
 	public function noGetir()
 	{
 		$sorgu = "select * from crehber order by ad asc";
 		$result = $this->baglanti->query($sorgu);
-		return $result;
+		return $result->fetchAll(PDO::FETCH_OBJ);
 	}
-	
-	public function lKontrol($kul,$sif)
+
+	public function lKontrol($kul, $sif)
 	{
-		$sorgu = "select id,adSoyad from kullanici where kAd='".$kul."' AND kSifre='".md5($sif)."'";
+		$sorgu = "select id,adSoyad from kullanici where kAd='" . $kul . "' AND kSifre='" . md5($sif) . "'";
 		$result = $this->baglanti->query($sorgu);
-		return $result->fetch_object();
+
+		return $result->fetch() ?: null;
 	}
-	
-	public function noKaydet($adi,$sAdi,$telNo,$cKisa,$dKisa)
+
+	public function noKaydet($adi, $sAdi, $telNo, $cKisa, $dKisa)
 	{
-		$smt = $this->baglanti->query("INSERT INTO crehber(ad,soyad,tel_no,tel_kisa,da_kisa) VALUES('".$adi."','".$sAdi."','".$telNo."','".$cKisa."','".$dKisa."')");
-		if($smt)
-		{
-			return true;
-		}else
-		{
-			return false;
-		}
-		
-		
+		$sorgu = "INSERT INTO crehber (ad, soyad, tel_no, tel_kisa, da_kisa) 
+                  VALUES (:ad, :soyad, :tel_no, :tel_kisa, :da_kisa)";
+
+		$stmt = $this->baglanti->prepare($sorgu);
+
+		return $stmt->execute([
+			'ad'       => $adi,
+			'soyad'    => $sAdi,
+			'tel_no'   => $telNo,
+			'tel_kisa' => $cKisa,
+			'da_kisa'  => $dKisa
+		]);
 	}
 	public function gGetir($id)
 	{
-		$sorgu = "SELECT * FROM crehber where id=".$id;
-		$result = $this->baglanti->query($sorgu);
-		return $result->fetch_object();
+		$sorgu = "SELECT * FROM crehber WHERE id = :id";
+		$stmt = $this->baglanti->prepare($sorgu);
+		$stmt->execute(['id' => $id]);
+
+		return $stmt->fetch() ?: null;
 	}
-	public function noGuncelle($g_adi,$g_sAdi,$g_telNo,$g_cKisa,$g_dKisa,$g_gizli)
+	public function noGuncelle($g_adi, $g_sAdi, $g_telNo, $g_cKisa, $g_dKisa, $g_gizli)
 	{
-		$sorgu = "UPDATE crehber SET ad='".$g_adi."',soyad='".$g_sAdi."',tel_no='".$g_telNo."',tel_kisa='".$g_cKisa."',da_kisa='".$g_dKisa."' WHERE id=".$g_gizli;
-		if($this->baglanti->query($sorgu))
-		{
-			return true;
-		}else
-		{
-			return false;
-		}
+		$sorgu = "UPDATE crehber 
+                  SET ad = :ad, soyad = :soyad, tel_no = :tel_no, tel_kisa = :tel_kisa, da_kisa = :da_kisa 
+                  WHERE id = :id";
+
+		$stmt = $this->baglanti->prepare($sorgu);
+
+		return $stmt->execute([
+			'ad'       => $g_adi,
+			'soyad'    => $g_sAdi,
+			'tel_no'   => $g_telNo,
+			'tel_kisa' => $g_cKisa,
+			'da_kisa'  => $g_dKisa,
+			'id'       => $g_gizli
+		]);
 	}
 }
-

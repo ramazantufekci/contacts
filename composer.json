@@ -1,10 +1,13 @@
 {
     "name": "ramazantufekci/contacts",
-    "type": "library",
+    "type": "project",
     "description": "Contacts List",
-    "version" : "1.0.0",
     "homepage": "https://github.com/ramazantufekci/contacts",
-    "keywords": ["Contacts", "php"],
+    "keywords": [
+        "Contacts",
+        "php",
+        "address-book"
+    ],
     "license": "MIT",
     "authors": [
         {
@@ -14,14 +17,16 @@
         }
     ],
     "require": {
-        "php": ">=5.6"
+        "php": ">=8.1",
+        "vlucas/phpdotenv": "^5.7"
     },
     "autoload": {
         "psr-4": {
             "DRContacts\\": "src/"
         }
     },
-    "minimum-stability": "dev",
+    "minimum-stability": "stable",
+    "prefer-stable": true,
     "extra": {
         "branch-alias": {
             "dev-master": "1.0-dev"
