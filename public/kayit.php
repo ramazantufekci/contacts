@@ -27,7 +27,7 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
 		$telNo = $_POST["telNo"];
 		$cKisa = $_POST["cKisa"];
 		$dKisa = $_POST["dKisa"];
-		$db->noKaydet($adi, $sadi, $telNo, $cKisa, $dKisa);
+		echo $db->noKaydet($adi, $sadi, $telNo, $cKisa, $dKisa);
 	}
 }
 if ($_SERVER['REQUEST_METHOD'] === 'GET') {

@@ -25,6 +25,9 @@
             "DRContacts\\": "src/"
         }
     },
+    "scripts": {
+        "migrate": "php migrate.php"
+    },
     "minimum-stability": "stable",
     "prefer-stable": true,
     "extra": {

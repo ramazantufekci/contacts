@@ -57,7 +57,7 @@ if ($_POST) {
 	</script>
 </head>
 
-<body>
+<body <?php echo isset($_SESSION["kull"]) === true ? '' : 'class=modal-open'; ?>>
 
 	<div class="d-flex flex-column flex-md-row align-items-center p-3 px-md-4 mb-3 bg-white border-bottom box-shadow">
 		<h5 class="my-0 mr-md-auto font-weight-normal">DR Yazılım</h5>
@@ -71,13 +71,14 @@ if ($_POST) {
 		if (isset($_SESSION["kull"])) {
 			printf(' <span class="navbar-text">%s</span>&nbsp;&nbsp;<a class="btn btn-outline-primary" href="/logout.php">Çıkış Yap</a>', $_SESSION["kull"]);
 			echo '&nbsp;&nbsp;<a class="btn btn-outline-primary" href="#" data-toggle="modal" data-target="#exampleModal2">Ekle</a>';
+			echo '&nbsp;&nbsp;<a class="btn btn-outline-primary" href="/indir.php">İndir</a>';
 		} else {
 			echo '<a class="btn btn-outline-primary" href="#" data-toggle="modal" data-target="#exampleModal">Giriş Yap</a>';
 		}
 		?>
-		&nbsp;&nbsp;<a class="btn btn-outline-primary" href="/indir.php">İndir</a>
+
 	</div>
-	<div class="modal fade" id="exampleModal" tabindex="-1" role="dialog" aria-labelledby="exampleModalLabel" aria-hidden="true">
+	<div class="modal fade <?php echo isset($_SESSION["kull"]) === true ? '' : 'show'; ?>" <?php echo isset($_SESSION["kull"]) === true ? '' : 'style=display:block;'; ?> id="exampleModal" tabindex="-1" role="dialog" aria-labelledby="exampleModalLabel" <?php echo isset($_SESSION["kull"]) === true ? 'aria-hidden=true' : ''; ?>>
 		<div class="modal-dialog" role="document">
 			<div class="modal-content">
 				<div class="modal-header">
@@ -200,11 +201,12 @@ if ($_POST) {
 			</thead>
 			<tbody>
 				<?php
-				$dv = new db();
-				$noBilgi = $dv->noGetir();
+				if (isset($_SESSION["kull"])) {
+					$dv = new db();
+					$noBilgi = $dv->noGetir();
 
-				foreach ($noBilgi as $obj) {
-					printf('<tr>
+					foreach ($noBilgi as $obj) {
+						printf('<tr>
 		  <th scope="row"></th>
 		  <td>%s</td>
 		  <td>%s</td>
@@ -212,15 +214,13 @@ if ($_POST) {
 		  <td><a href="tel:%s">%s</a></td>
 		  <td><a href="tel:%s">%s</a></td>
 		', $obj->ad, $obj->soyad, $obj->tel_no, $obj->tel_no, $obj->tel_kisa, $obj->tel_kisa, $obj->da_kisa, $obj->da_kisa);
-					if (isset($_SESSION["id"])) {
-						echo '<td><a id="c_guncelle" class="btn btn-outline-primary" onclick="getirla(' . $obj->id . ')" data-toggle="modal" data-target="#modalGuncel">Güncelle</a></td></tr>';
-					} else {
-						echo "</tr>";
+						if (isset($_SESSION["id"])) {
+							echo '<td><a id="c_guncelle" class="btn btn-outline-primary" onclick="getirla(' . $obj->id . ')" data-toggle="modal" data-target="#modalGuncel">Güncelle</a></td></tr>';
+						} else {
+							echo "</tr>";
+						}
 					}
 				}
-
-
-
 				?>
 			</tbody>
 		</table>
@@ -256,7 +256,7 @@ if ($_POST) {
 					url: "/kayit.php",
 					data: "session=<?php echo (isset($_SESSION["id"]) ? $_SESSION["id"] : md5("kastamonu")); ?>&adi=" + adi + "&sAdi=" + sAdi + "&telNo=" + telNo + "&cKisa=" + cKisa + "&dKisa=" + dKisa,
 					success: function(x) {
-						if (x == "true") {
+						if (x == 1) {
 							adi = $("#adi").val("");
 							sAdi = $("#sAdi").val("");
 							telNo = $("#telNo").val("");
@@ -271,7 +271,6 @@ if ($_POST) {
 				});
 			});
 			$("#g_guncelle").click(function() {
-				alert("guncelle");
 				var g_adi, g_sAdi, g_telNo, g_cKisa, g_dKisa, g_gizli;
 				g_adi = $("#g_adi").val();
 				g_sAdi = $("#g_sAdi").val();
@@ -288,13 +287,11 @@ if ($_POST) {
 							if (x == "true") {
 								location.reload();
 							} else {
-								console.log(x);
 								$("#durum").val("Güncellenmedi!!!");
 							}
 						}
 					});
 				} else {
-					console.log(g_adi.length, g_sAdi.length, g_telNo.length, g_cKisa.length, g_dKisa.length, g_gizli.length);
 					$("#durum5").text("Güncellenmedi!!!");
 				}
 
@@ -302,6 +299,15 @@ if ($_POST) {
 
 		});
 	</script>
+	<?php if (!isset($_SESSION["kull"])): ?>
+		<script>
+			// Sayfa yüklendiğinde oturum yoksa modalı otomatik aç
+			document.addEventListener("DOMContentLoaded", function() {
+				var myModal = new bootstrap.Modal(document.getElementById('exampleModal'));
+				myModal.show();
+			});
+		</script>
+	<?php endif; ?>
 </body>
 
 </html>

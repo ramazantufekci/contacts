@@ -37,10 +37,21 @@ class db
 
 	public function lKontrol($kul, $sif)
 	{
-		$sorgu = "select id,adSoyad from kullanici where kAd='" . $kul . "' AND kSifre='" . md5($sif) . "'";
-		$result = $this->baglanti->query($sorgu);
+		$sorgu = "SELECT id, adSoyad,kSifre FROM kullanici WHERE kAd = :kul";
+		$stmt = $this->baglanti->prepare($sorgu);
 
-		return $result->fetch() ?: null;
+		// Parametreleri güvenli bir şekilde bağlıyoruz (SQL Injection engellendi)
+		$stmt->execute([
+			'kul' => $kul
+		]);
+		$stmtRest = $stmt->fetch();
+		if ($stmtRest) {
+			if (password_verify($sif, $stmtRest->kSifre)) {
+				return $stmtRest;
+			}
+		}
+
+		return false;
 	}
 
 	public function noKaydet($adi, $sAdi, $telNo, $cKisa, $dKisa)
