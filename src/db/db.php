@@ -6,7 +6,7 @@ use DRContacts\config\config;
 use PDO;
 use PDOException;
 
-class db
+class Db
 {
 	private ?PDO $baglanti = null;
 	public function __construct()
@@ -45,10 +45,9 @@ class db
 			'kul' => $kul
 		]);
 		$stmtRest = $stmt->fetch();
-		if ($stmtRest) {
-			if (password_verify($sif, $stmtRest->kSifre)) {
-				return $stmtRest;
-			}
+		if ($stmtRest && password_verify($sif, $stmtRest->kSifre)) {
+
+			return $stmtRest;
 		}
 
 		return false;
@@ -56,7 +55,7 @@ class db
 
 	public function noKaydet($adi, $sAdi, $telNo, $cKisa, $dKisa)
 	{
-		$sorgu = "INSERT INTO crehber (ad, soyad, tel_no, tel_kisa, da_kisa) 
+		$sorgu = "INSERT INTO crehber (ad, soyad, tel_no, tel_kisa, da_kisa)
                   VALUES (:ad, :soyad, :tel_no, :tel_kisa, :da_kisa)";
 
 		$stmt = $this->baglanti->prepare($sorgu);
@@ -79,19 +78,21 @@ class db
 	}
 	public function noGuncelle($g_adi, $g_sAdi, $g_telNo, $g_cKisa, $g_dKisa, $g_gizli)
 	{
-		$sorgu = "UPDATE crehber 
-                  SET ad = :ad, soyad = :soyad, tel_no = :tel_no, tel_kisa = :tel_kisa, da_kisa = :da_kisa 
+		if (isset($_SESSION["kull"])) {
+
+			$sorgu = "UPDATE crehber SET ad = :ad, soyad = :soyad, tel_no = :tel_no, tel_kisa = :tel_kisa, da_kisa = :da_kisa
                   WHERE id = :id";
 
-		$stmt = $this->baglanti->prepare($sorgu);
+			$stmt = $this->baglanti->prepare($sorgu);
 
-		return $stmt->execute([
-			'ad'       => $g_adi,
-			'soyad'    => $g_sAdi,
-			'tel_no'   => $g_telNo,
-			'tel_kisa' => $g_cKisa,
-			'da_kisa'  => $g_dKisa,
-			'id'       => $g_gizli
-		]);
+			return $stmt->execute([
+				'ad'       => $g_adi,
+				'soyad'    => $g_sAdi,
+				'tel_no'   => $g_telNo,
+				'tel_kisa' => $g_cKisa,
+				'da_kisa'  => $g_dKisa,
+				'id'       => $g_gizli
+			]);
+		}
 	}
 }

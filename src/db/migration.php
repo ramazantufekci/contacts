@@ -6,7 +6,7 @@ use DRContacts\config\config;
 use PDO;
 use PDOException;
 
-class migration
+class Migration
 {
     private PDO $baglanti;
 

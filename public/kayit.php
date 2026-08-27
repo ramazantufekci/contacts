@@ -1,15 +1,15 @@
 <?php
 session_start();
-include_once("../vendor/autoload.php");
+include_once "../vendor/autoload.php";
 if (file_exists(__DIR__ . '/../.env')) {
 	$dotenv = Dotenv\Dotenv::createImmutable(__DIR__ . '/..');
 	$dotenv->load();
 }
 
-use DRContacts\db\db;
+use DRContacts\db\Db;
 
 if ($_SERVER['REQUEST_METHOD'] === 'POST') {
-	$db = new db();
+	$db = new Db();
 	if ($_SESSION["id"] == $_POST["session"] && isset($_POST["g_gizli"])) {
 		$adi = $_POST["g_adi"];
 		$sadi = $_POST["g_sAdi"];
@@ -30,10 +30,8 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
 		echo $db->noKaydet($adi, $sadi, $telNo, $cKisa, $dKisa);
 	}
 }
-if ($_SERVER['REQUEST_METHOD'] === 'GET') {
-	if (is_numeric($_GET["id"])) {
-		$db = new db();
+if ($_SERVER['REQUEST_METHOD'] === 'GET' && is_numeric($_GET["id"])) {
 
-		echo json_encode($db->gGetir($_GET["id"]));
-	}
+	$db = new Db();
+	echo json_encode($db->gGetir($_GET["id"]));
 }

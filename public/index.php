@@ -1,26 +1,26 @@
 <?php
 session_start();
 header('Content-Type: text/html; charset=utf-8');
-include_once("../vendor/autoload.php");
+include_once "../vendor/autoload.php";
 if (file_exists(__DIR__ . '/../.env')) {
 	$dotenv = Dotenv\Dotenv::createImmutable(__DIR__ . '/..');
 	$dotenv->load();
 }
 
 use DRContacts\db\db;
-use DRContacts\form\form;
+use DRContacts\form\Form;
 
 if ($_POST) {
 	$db = new db();
-	$user = form::valid($_POST["kullanici"]);
-	$pass = form::valid($_POST["sifre"]);
+	$user = Form::valid($_POST["kullanici"]);
+	$pass = Form::valid($_POST["sifre"]);
 	$result = $db->lKontrol($user, $pass);
 	if (isset($result->id)) {
 		$_SESSION["kull"] = $result->adSoyad;
-		$_SESSION["id"] = md5($result->id);
+		$_SESSION["id"] = hash('sha256', $result->id);
 	} else {
-		header("Refresh: 5; url=" . $_SERVER["HTTP_HOST"] . "/");
-		die("<center>Kullanici adi veya sifre yanlis !!!<br />Anasayfa'ya yönlendiriliyorsunuz.</center>");
+		header("Refresh: 5; url=http://" . $_SERVER["HTTP_HOST"] . "/");
+		die("<center>Kullanici adi veya sifre yanlis !!!<br />Anasayfa'ya yönlendiriliyorsunuz...</center>");
 	}
 }
 ?>
@@ -62,10 +62,7 @@ if ($_POST) {
 	<div class="d-flex flex-column flex-md-row align-items-center p-3 px-md-4 mb-3 bg-white border-bottom box-shadow">
 		<h5 class="my-0 mr-md-auto font-weight-normal">DR Yazılım</h5>
 		<nav class="my-2 my-md-0 mr-md-3">
-			<a class="p-2 text-dark" href="#"></a>
-			<a class="p-2 text-dark" href="#"></a>
-			<a class="p-2 text-dark" href="#"></a>
-			<a class="p-2 text-dark" href="#"></a>
+
 		</nav>
 		<?php
 		if (isset($_SESSION["kull"])) {
@@ -106,11 +103,11 @@ if ($_POST) {
 		</div>
 	</div>
 	<!-- ekle modal -->
-	<div class="modal fade" id="exampleModal2" tabindex="-1" role="dialog" aria-labelledby="exampleModalLabel" aria-hidden="true">
+	<div class="modal fade" id="exampleModal2" tabindex="-1" role="dialog" aria-labelledby="ekleModal" aria-hidden="true">
 		<div class="modal-dialog" role="document">
 			<div class="modal-content">
 				<div class="modal-header">
-					<h5 class="modal-title" id="exampleModalLabel">Kişi Girişi</h5>
+					<h5 class="modal-title" id="ekleModal">Kişi Girişi</h5>
 					<button type="button" class="close" data-dismiss="modal" aria-label="Close">
 						<span aria-hidden="true">&times;</span>
 					</button>
@@ -138,7 +135,7 @@ if ($_POST) {
 					</div>
 				</div>
 				<div class="modal-footer">
-					<label id="durum4" class="col-form-label text-danger"></label>
+					<label id="durum4" for="kKaydet" class="col-form-label text-danger"></label>
 					<button type="submit" class="btn btn-outline-primary text-center" id="kKaydet">Kaydet</button>
 				</div>
 			</div>
@@ -146,35 +143,35 @@ if ($_POST) {
 	</div>
 	<!-- ekle modal bitis -->
 	<!-- Guncelle modal baslangic -->
-	<div class="modal fade" id="modalGuncel" tabindex="-1" role="dialog" aria-labelledby="exampleModalLabel" aria-hidden="true">
+	<div class="modal fade" id="modalGuncel" tabindex="-1" role="dialog" aria-labelledby="guncelleModal" aria-hidden="true">
 		<div class="modal-dialog" role="document">
 			<div class="modal-content">
 				<div class="modal-header">
-					<h5 class="modal-title" id="exampleModalLabel">Kişi Güncelleme</h5>
+					<h5 class="modal-title" id="guncelleModal">Kişi Güncelleme</h5>
 					<button type="button" class="close" data-dismiss="modal" aria-label="Close">
 						<span aria-hidden="true">&times;</span>
 					</button>
 				</div>
 				<div class="modal-body">
 					<div class="form-group">
-						<label for="adi" class="col-form-label">Adı:</label>
+						<label for="g_adi" class="col-form-label">Adı:</label>
 						<input type="text" class="form-control" id="g_adi" name="g_ad" required>
 						<input type="hidden" class="form-control" id="g_gizli" name="g_gizli">
 					</div>
 					<div class="form-group">
-						<label for="sAdi" class="col-form-label">Soyadı:</label>
+						<label for="g_sAdi" class="col-form-label">Soyadı:</label>
 						<input type="text" class="form-control" id="g_sAdi" name="g_soyadi" required>
 					</div>
 					<div class="form-group">
-						<label for="telNo" class="col-form-label">Tel No:</label>
+						<label for="g_telNo" class="col-form-label">Tel No:</label>
 						<input type="text" class="form-control" id="g_telNo" name="g_telNo" required>
 					</div>
 					<div class="form-group">
-						<label for="cKisa" class="col-form-label">Cep den Kısa Kod:</label>
+						<label for="g_cKisa" class="col-form-label">Cep den Kısa Kod:</label>
 						<input type="text" class="form-control" id="g_cKisa" name="g_cKisa" required>
 					</div>
 					<div class="form-group">
-						<label for="dKisa" class="col-form-label">Dahili Kısa Kod:</label>
+						<label for="g_dKisa" class="col-form-label">Dahili Kısa Kod:</label>
 						<input type="text" class="form-control" id="g_dKisa" name="g_dKisa" required>
 					</div>
 				</div>
@@ -196,7 +193,7 @@ if ($_POST) {
 					<th scope="col">GSM TEL</th>
 					<th scope="col">CEP DEN KISA KOD</th>
 					<th scope="col">DAHILI KISA KOD</th>
-					<?php echo isset($_SESSION["id"]) == true ? '<th scope="col"></th>' : ""; ?>
+					<?php echo isset($_SESSION["id"]) === true ? '<th scope="col"></th>' : ""; ?>
 				</tr>
 			</thead>
 			<tbody>
@@ -254,7 +251,7 @@ if ($_POST) {
 				$.ajax({
 					type: "POST",
 					url: "/kayit.php",
-					data: "session=<?php echo (isset($_SESSION["id"]) ? $_SESSION["id"] : md5("kastamonu")); ?>&adi=" + adi + "&sAdi=" + sAdi + "&telNo=" + telNo + "&cKisa=" + cKisa + "&dKisa=" + dKisa,
+					data: "session=<?php echo (isset($_SESSION["id"]) ? $_SESSION["id"] : hash('sha256', "kastamonu")); ?>&adi=" + adi + "&sAdi=" + sAdi + "&telNo=" + telNo + "&cKisa=" + cKisa + "&dKisa=" + dKisa,
 					success: function(x) {
 						if (x == 1) {
 							adi = $("#adi").val("");
@@ -282,7 +279,7 @@ if ($_POST) {
 					$.ajax({
 						type: "POST",
 						url: "/kayit.php",
-						data: "session=<?php echo (isset($_SESSION["id"]) ? $_SESSION["id"] : md5("kastamonu")); ?>&g_adi=" + g_adi + "&g_sAdi=" + g_sAdi + "&g_telNo=" + g_telNo + "&g_cKisa=" + g_cKisa + "&g_dKisa=" + g_dKisa + "&g_gizli=" + g_gizli,
+						data: "session=<?php echo (isset($_SESSION["id"]) ? $_SESSION["id"] : hash('sha256', "kastamonu")); ?>&g_adi=" + g_adi + "&g_sAdi=" + g_sAdi + "&g_telNo=" + g_telNo + "&g_cKisa=" + g_cKisa + "&g_dKisa=" + g_dKisa + "&g_gizli=" + g_gizli,
 						success: function(x) {
 							if (x == "true") {
 								location.reload();
