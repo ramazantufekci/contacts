@@ -30,7 +30,7 @@ class Db
 
 	public function noGetir()
 	{
-		$sorgu = "select * from crehber order by ad asc";
+		$sorgu = "select * from crehber order by id DESC";
 		$result = $this->baglanti->query($sorgu);
 		return $result->fetchAll(PDO::FETCH_OBJ);
 	}
@@ -51,6 +51,29 @@ class Db
 		}
 
 		return false;
+	}
+
+	/**
+	 * Güvenli yeni admin/kullanıcı ekleme metodu
+	 */
+	public function adminEkle(string $kAd, string $sifre, string $adSoyad): bool
+	{
+		// Şifreyi MD5 yerine bcrypt (yerleşik güvenli algoritma) ile şifreliyoruz
+		$guvenliSifre = password_hash($sifre, PASSWORD_BCRYPT);
+
+		$sorgu = "INSERT INTO kullanici (kAd, kSifre, adSoyad) VALUES (:kad, :sifre, :isim)";
+		$stmt = $this->baglanti->prepare($sorgu);
+
+		try {
+			return $stmt->execute([
+				'kad'   => $kAd,
+				'sifre' => $guvenliSifre,
+				'isim'  => $adSoyad
+			]);
+		} catch (\PDOException $e) {
+			// Eğer aynı kullanıcı adı (kAd) zaten varsa hata fırlatabilir veya false dönebilir
+			return false;
+		}
 	}
 
 	public function noKaydet($adi, $sAdi, $telNo, $cKisa, $dKisa)
@@ -93,6 +116,14 @@ class Db
 				'da_kisa'  => $g_dKisa,
 				'id'       => $g_gizli
 			]);
+		}
+	}
+	public function noSil($id)
+	{
+		if (isset($_SESSION["kull"])) {
+			$sorgu = "DELETE FROM crehber WHERE id = :id";
+			$stmt = $this->baglanti->prepare($sorgu);
+			return $stmt->execute(['id' => $id]);
 		}
 	}
 }

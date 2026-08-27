@@ -7,11 +7,11 @@ if (file_exists(__DIR__ . '/../.env')) {
 	$dotenv->load();
 }
 
-use DRContacts\db\db;
+use DRContacts\db\Db;
 use DRContacts\form\Form;
 
-if ($_POST) {
-	$db = new db();
+if ($_SERVER['REQUEST_METHOD'] === 'POST') {
+	$db = new Db();
 	$user = Form::valid($_POST["kullanici"]);
 	$pass = Form::valid($_POST["sifre"]);
 	$result = $db->lKontrol($user, $pass);
@@ -19,45 +19,69 @@ if ($_POST) {
 		$_SESSION["kull"] = $result->adSoyad;
 		$_SESSION["id"] = hash('sha256', $result->id);
 	} else {
-		header("Refresh: 5; url=http://" . $_SERVER["HTTP_HOST"] . "/");
+		header("Refresh: 5; url=/");
 		die("<center>Kullanici adi veya sifre yanlis !!!<br />Anasayfa'ya yönlendiriliyorsunuz...</center>");
 	}
 }
+if (!isset($_SESSION["token"])) {
+	$_SESSION["token"] = hash('sha256', time() . rand(1000, 9999));
+}
 ?>
 <!doctype html>
-<html lang="en">
+<html lang="tr">
 
 <head>
 	<meta charset="utf-8">
 	<meta name="viewport" content="width=device-width, initial-scale=1, shrink-to-fit=no">
-	<meta name="description" content="">
-	<meta name="author" content="">
+	<meta name="description" content="Telefon Listesi">
+	<meta name="author" content="Ramazan TÜFEKÇİ">
 	<link rel="icon" href="/favicon.ico">
 
 	<title>Telefon Listesi</title>
 
 	<!-- Bootstrap core CSS -->
 	<link href="/css/bootstrap.min.css" rel="stylesheet">
-	<script>
-		function getirla(deneme) {
-			$("#g_gizli").val(deneme);
-			$.ajax({
-				type: "GET",
-				url: "/kayit.php?id=" + deneme,
-				success: function(x) {
-					var json = JSON.parse(x);
-					$("#g_adi").val(json.ad);
-					$("#g_sAdi").val(json.soyad);
-					$("#g_telNo").val(json.tel_no);
-					$("#g_cKisa").val(json.tel_kisa);
-					$("#g_dKisa").val(json.da_kisa);
-				}
-			});
-		}
-	</script>
+	<?php if (isset($_SESSION["kull"])): ?>
+		<script>
+			function kayitDetayGetir(id) {
+				$("#g_gizli").val(id);
+				$.ajax({
+					type: "GET",
+					url: "/kayit.php?id=" + id,
+					success: function(x) {
+						var json = JSON.parse(x);
+						$("#g_adi").val(json.ad);
+						$("#g_sAdi").val(json.soyad);
+						$("#g_telNo").val(json.tel_no);
+						$("#g_cKisa").val(json.tel_kisa);
+						$("#g_dKisa").val(json.da_kisa);
+					},
+					error: function(xhr, status, error) {
+						console.error("AJAX Hatası: " + status + " - " + error);
+					}
+				});
+			}
+
+			function sil(id, token) {
+
+				$.ajax({
+					type: "GET",
+					url: "/kayit.php?id=" + id + "&token=" + token,
+					dataType: "json",
+					success: function(x) {
+
+						window.location.reload();
+					},
+					error: function(xhr, status, error) {
+						console.error("AJAX Hatası: " + status + " - " + error);
+					}
+				});
+			}
+		</script>
+	<?php endif; ?>
 </head>
 
-<body <?php echo isset($_SESSION["kull"]) === true ? '' : 'class=modal-open'; ?>>
+<body>
 
 	<div class="d-flex flex-column flex-md-row align-items-center p-3 px-md-4 mb-3 bg-white border-bottom box-shadow">
 		<h5 class="my-0 mr-md-auto font-weight-normal">DR Yazılım</h5>
@@ -66,20 +90,21 @@ if ($_POST) {
 		</nav>
 		<?php
 		if (isset($_SESSION["kull"])) {
-			printf(' <span class="navbar-text">%s</span>&nbsp;&nbsp;<a class="btn btn-outline-primary" href="/logout.php">Çıkış Yap</a>', $_SESSION["kull"]);
-			echo '&nbsp;&nbsp;<a class="btn btn-outline-primary" href="#" data-toggle="modal" data-target="#exampleModal2">Ekle</a>';
+			printf(' <span class="navbar-text">%s</span>&nbsp;&nbsp;<a class="btn btn-outline-primary" href="/logout.php">Çıkış Yap</a>', "Hoş geldiniz, " . $_SESSION["kull"]);
+			echo '&nbsp;&nbsp;<a class="btn btn-outline-primary" href="#" data-toggle="modal" data-target="#ekleModal">Ekle</a>';
+			echo '&nbsp;&nbsp;<a class="btn btn-outline-primary" href="#" data-toggle="modal" data-target="#adminEkleModal">Kullanıcı Ekle</a>';
 			echo '&nbsp;&nbsp;<a class="btn btn-outline-primary" href="/indir.php">İndir</a>';
 		} else {
-			echo '<a class="btn btn-outline-primary" href="#" data-toggle="modal" data-target="#exampleModal">Giriş Yap</a>';
+			echo '<a class="btn btn-outline-primary" href="#" data-toggle="modal" data-target="#girisModal">Giriş Yap</a>';
 		}
 		?>
 
 	</div>
-	<div class="modal fade <?php echo isset($_SESSION["kull"]) === true ? '' : 'show'; ?>" <?php echo isset($_SESSION["kull"]) === true ? '' : 'style=display:block;'; ?> id="exampleModal" tabindex="-1" role="dialog" aria-labelledby="exampleModalLabel" <?php echo isset($_SESSION["kull"]) === true ? 'aria-hidden=true' : ''; ?>>
+	<div class="modal fade" id="girisModal" tabindex="-1" role="dialog" aria-labelledby="girisModalLabel" aria-hidden="true">
 		<div class="modal-dialog" role="document">
 			<div class="modal-content">
 				<div class="modal-header">
-					<h5 class="modal-title" id="exampleModalLabel">Kullanıcı Girişi</h5>
+					<h5 class="modal-title" id="girisModalLabel">Kullanıcı Girişi</h5>
 					<button type="button" class="close" data-dismiss="modal" aria-label="Close">
 						<span aria-hidden="true">&times;</span>
 					</button>
@@ -102,88 +127,124 @@ if ($_POST) {
 			</div>
 		</div>
 	</div>
+	<!--kullanıcı ekle modal -->
+	<div class="modal fade" id="adminEkleModal" tabindex="-1" role="dialog" aria-labelledby="adminEkleModalLabel" aria-hidden="true">
+		<div class="modal-dialog" role="document">
+			<div class="modal-content">
+				<div class="modal-header">
+					<h5 class="modal-title" id="adminEkleModalLabel">Yeni Admin Ekle</h5>
+					<button type="button" class="close" data-dismiss="modal" aria-label="Close">
+						<span aria-hidden="true">&times;</span>
+					</button>
+				</div>
+				<div class="modal-body">
+					<form action="admin_ekle.php" method="post">
+						<div class="form-group">
+							<label for="admin-name" class="col-form-label">Adı:</label>
+							<input type="text" class="form-control" id="admin-name" name="adi">
+						</div>
+						<div class="form-group">
+							<label for="recipient-name" class="col-form-label">Kullanıcı Adı:</label>
+							<input type="text" class="form-control" id="recipient-name" name="kullanici">
+						</div>
+						<div class="form-group">
+							<label for="message-text" class="col-form-label">Şifre:</label>
+							<input type="password" class="form-control" id="message-text" name="sifre">
+						</div>
+				</div>
+				<div class="modal-footer">
+					<button type="submit" class="btn btn-outline-primary text-center">Ekle</button>
+				</div>
+				</form>
+			</div>
+		</div>
+	</div>
+	<!-- kullanıcı ekle modal bitiş -->
 	<!-- ekle modal -->
-	<div class="modal fade" id="exampleModal2" tabindex="-1" role="dialog" aria-labelledby="ekleModal" aria-hidden="true">
-		<div class="modal-dialog" role="document">
-			<div class="modal-content">
-				<div class="modal-header">
-					<h5 class="modal-title" id="ekleModal">Kişi Girişi</h5>
-					<button type="button" class="close" data-dismiss="modal" aria-label="Close">
-						<span aria-hidden="true">&times;</span>
-					</button>
-				</div>
-				<div class="modal-body">
-					<div class="form-group">
-						<label for="adi" class="col-form-label">Adı:</label>
-						<input type="text" class="form-control" id="adi" name="ad">
+	<?php if (isset($_SESSION["kull"])) { ?>
+		<div class="modal fade" id="ekleModal" tabindex="-1" role="dialog" aria-labelledby="ekleModalLabel" aria-hidden="true">
+			<div class="modal-dialog" role="document">
+				<div class="modal-content">
+					<div class="modal-header">
+						<h5 class="modal-title" id="ekleModalLabel">Kişi Girişi</h5>
+						<button type="button" class="close" data-dismiss="modal" aria-label="Close">
+							<span aria-hidden="true">&times;</span>
+						</button>
 					</div>
-					<div class="form-group">
-						<label for="sAdi" class="col-form-label">Soyadı:</label>
-						<input type="text" class="form-control" id="sAdi" name="soyadi">
+					<div class="modal-body">
+						<div class="form-group">
+							<label for="adi" class="col-form-label">Adı:</label>
+							<input type="text" class="form-control" id="adi" name="ad">
+						</div>
+						<div class="form-group">
+							<label for="sAdi" class="col-form-label">Soyadı:</label>
+							<input type="text" class="form-control" id="sAdi" name="soyadi">
+						</div>
+						<div class="form-group">
+							<label for="telNo" class="col-form-label">Tel No:</label>
+							<input type="text" class="form-control" id="telNo" name="telNo">
+						</div>
+						<div class="form-group">
+							<label for="cKisa" class="col-form-label">Cep den Kısa Kod:</label>
+							<input type="text" class="form-control" id="cKisa" name="cKisa">
+						</div>
+						<div class="form-group">
+							<label for="dKisa" class="col-form-label">Dahili Kısa Kod:</label>
+							<input type="text" class="form-control" id="dKisa" name="dKisa">
+						</div>
 					</div>
-					<div class="form-group">
-						<label for="telNo" class="col-form-label">Tel No:</label>
-						<input type="text" class="form-control" id="telNo" name="telNo">
+					<div class="modal-footer">
+						<label id="durum4" for="kKaydet" class="col-form-label text-danger"></label>
+						<button type="submit" class="btn btn-outline-primary text-center" id="kKaydet">Kaydet</button>
 					</div>
-					<div class="form-group">
-						<label for="cKisa" class="col-form-label">Cep den Kısa Kod:</label>
-						<input type="text" class="form-control" id="cKisa" name="cKisa">
-					</div>
-					<div class="form-group">
-						<label for="dKisa" class="col-form-label">Dahili Kısa Kod:</label>
-						<input type="text" class="form-control" id="dKisa" name="dKisa">
-					</div>
-				</div>
-				<div class="modal-footer">
-					<label id="durum4" for="kKaydet" class="col-form-label text-danger"></label>
-					<button type="submit" class="btn btn-outline-primary text-center" id="kKaydet">Kaydet</button>
 				</div>
 			</div>
 		</div>
-	</div>
-	<!-- ekle modal bitis -->
-	<!-- Guncelle modal baslangic -->
-	<div class="modal fade" id="modalGuncel" tabindex="-1" role="dialog" aria-labelledby="guncelleModal" aria-hidden="true">
-		<div class="modal-dialog" role="document">
-			<div class="modal-content">
-				<div class="modal-header">
-					<h5 class="modal-title" id="guncelleModal">Kişi Güncelleme</h5>
-					<button type="button" class="close" data-dismiss="modal" aria-label="Close">
-						<span aria-hidden="true">&times;</span>
-					</button>
-				</div>
-				<div class="modal-body">
-					<div class="form-group">
-						<label for="g_adi" class="col-form-label">Adı:</label>
-						<input type="text" class="form-control" id="g_adi" name="g_ad" required>
-						<input type="hidden" class="form-control" id="g_gizli" name="g_gizli">
+		<!-- ekle modal bitis -->
+		<!-- Guncelle modal baslangic -->
+		<div class="modal fade" id="modalGuncel" tabindex="-1" role="dialog" aria-labelledby="guncelleModal" aria-hidden="true">
+			<div class="modal-dialog" role="document">
+				<div class="modal-content">
+					<div class="modal-header">
+						<h5 class="modal-title" id="guncelleModal">Kişi Güncelleme</h5>
+						<button type="button" class="close" data-dismiss="modal" aria-label="Close">
+							<span aria-hidden="true">&times;</span>
+						</button>
 					</div>
-					<div class="form-group">
-						<label for="g_sAdi" class="col-form-label">Soyadı:</label>
-						<input type="text" class="form-control" id="g_sAdi" name="g_soyadi" required>
+					<div class="modal-body">
+						<div class="form-group">
+							<label for="g_adi" class="col-form-label">Adı:</label>
+							<input type="text" class="form-control" id="g_adi" name="g_ad" required>
+							<input type="hidden" class="form-control" id="g_gizli" name="g_gizli">
+						</div>
+						<div class="form-group">
+							<label for="g_sAdi" class="col-form-label">Soyadı:</label>
+							<input type="text" class="form-control" id="g_sAdi" name="g_soyadi" required>
+						</div>
+						<div class="form-group">
+							<label for="g_telNo" class="col-form-label">Tel No:</label>
+							<input type="text" class="form-control" id="g_telNo" name="g_telNo" required>
+						</div>
+						<div class="form-group">
+							<label for="g_cKisa" class="col-form-label">Cep den Kısa Kod:</label>
+							<input type="text" class="form-control" id="g_cKisa" name="g_cKisa" required>
+						</div>
+						<div class="form-group">
+							<label for="g_dKisa" class="col-form-label">Dahili Kısa Kod:</label>
+							<input type="text" class="form-control" id="g_dKisa" name="g_dKisa" required>
+						</div>
 					</div>
-					<div class="form-group">
-						<label for="g_telNo" class="col-form-label">Tel No:</label>
-						<input type="text" class="form-control" id="g_telNo" name="g_telNo" required>
+					<div class="modal-footer">
+						<label id="durum5" class="col-form-label text-danger"></label>
+						<button type="submit" class="btn btn-outline-primary text-center" id="g_guncelle">Güncelle</button>
 					</div>
-					<div class="form-group">
-						<label for="g_cKisa" class="col-form-label">Cep den Kısa Kod:</label>
-						<input type="text" class="form-control" id="g_cKisa" name="g_cKisa" required>
-					</div>
-					<div class="form-group">
-						<label for="g_dKisa" class="col-form-label">Dahili Kısa Kod:</label>
-						<input type="text" class="form-control" id="g_dKisa" name="g_dKisa" required>
-					</div>
-				</div>
-				<div class="modal-footer">
-					<label id="durum5" class="col-form-label text-danger"></label>
-					<button type="submit" class="btn btn-outline-primary text-center" id="g_guncelle">Güncelle</button>
 				</div>
 			</div>
 		</div>
-	</div>
-	<!-- guncelle modal bitis -->
-	<div class="container">
+		<!-- guncelle modal bitis -->
+	<?php } ?>
+	<div class="container table-responsive">
+
 		<table class="table">
 			<thead class="thead-dark">
 				<tr>
@@ -203,6 +264,12 @@ if ($_POST) {
 					$noBilgi = $dv->noGetir();
 
 					foreach ($noBilgi as $obj) {
+						$ad = htmlspecialchars($obj->ad, ENT_QUOTES, 'UTF-8');
+						$soyad = htmlspecialchars($obj->soyad, ENT_QUOTES, 'UTF-8');
+						$tel = htmlspecialchars($obj->tel_no, ENT_QUOTES, 'UTF-8');
+						$tel_kisa = htmlspecialchars($obj->tel_kisa, ENT_QUOTES, 'UTF-8');
+						$da_kisa = htmlspecialchars($obj->da_kisa, ENT_QUOTES, 'UTF-8');
+						$obj->token = $_SESSION["token"];
 						printf('<tr>
 		  <th scope="row"></th>
 		  <td>%s</td>
@@ -210,9 +277,10 @@ if ($_POST) {
 		  <td><a href="tel:%s">%s</a></td>
 		  <td><a href="tel:%s">%s</a></td>
 		  <td><a href="tel:%s">%s</a></td>
-		', $obj->ad, $obj->soyad, $obj->tel_no, $obj->tel_no, $obj->tel_kisa, $obj->tel_kisa, $obj->da_kisa, $obj->da_kisa);
+		', $ad, $soyad, $tel, $tel, $tel_kisa, $tel_kisa, $da_kisa, $da_kisa);
 						if (isset($_SESSION["id"])) {
-							echo '<td><a id="c_guncelle" class="btn btn-outline-primary" onclick="getirla(' . $obj->id . ')" data-toggle="modal" data-target="#modalGuncel">Güncelle</a></td></tr>';
+							echo '<td><a id="c_guncelle" class="btn btn-outline-primary" onclick="kayitDetayGetir(' . $obj->id . ')" data-toggle="modal" data-target="#modalGuncel">Güncelle</a>';
+							echo '<a id="c_sil" class="btn btn-outline-danger ml-1" onclick="sil(' . $obj->id . ', \'' . $obj->token . '\')" >Sil</a></td></tr>';
 						} else {
 							echo "</tr>";
 						}
@@ -225,7 +293,7 @@ if ($_POST) {
 	<footer class="page-footer font-small blue pt-4 mt-4">
 		<!-- Copyright -->
 		<div class="footer-copyright text-center py-3">© 2018 Copyright:
-			<a href="https://www.ramazantufekci.com/"> Ramazan TÜFEKÇİ</a>
+			<a href="https://www.ramazantufekci.com/" target="_blank"> Ramazan TÜFEKÇİ</a>
 		</div>
 		<!-- Copyright -->
 
@@ -239,68 +307,71 @@ if ($_POST) {
 	<script src="/js/jquery-3.3.1.slim.min.js"></script>
 	<script src="/js/popper.min.js"></script>
 	<script src="/js/bootstrap.min.js"></script>
-	<script>
-		$(function() {
-			$("#kKaydet").click(function() {
-				var adi, sAdi, telNo, cKisa, dKisa;
-				adi = $("#adi").val();
-				sAdi = $("#sAdi").val();
-				telNo = $("#telNo").val();
-				cKisa = $("#cKisa").val();
-				dKisa = $("#dKisa").val();
-				$.ajax({
-					type: "POST",
-					url: "/kayit.php",
-					data: "session=<?php echo (isset($_SESSION["id"]) ? $_SESSION["id"] : hash('sha256', "kastamonu")); ?>&adi=" + adi + "&sAdi=" + sAdi + "&telNo=" + telNo + "&cKisa=" + cKisa + "&dKisa=" + dKisa,
-					success: function(x) {
-						if (x == 1) {
-							adi = $("#adi").val("");
-							sAdi = $("#sAdi").val("");
-							telNo = $("#telNo").val("");
-							cKisa = $("#cKisa").val("");
-							dKisa = $("#dKisa").val("");
-
-						} else {
-							$("#durum4").text("Kayıt başarısız oldu !!!");
-						}
-
-					}
-				});
-			});
-			$("#g_guncelle").click(function() {
-				var g_adi, g_sAdi, g_telNo, g_cKisa, g_dKisa, g_gizli;
-				g_adi = $("#g_adi").val();
-				g_sAdi = $("#g_sAdi").val();
-				g_telNo = $("#g_telNo").val();
-				g_cKisa = $("#g_cKisa").val();
-				g_dKisa = $("#g_dKisa").val();
-				g_gizli = $("#g_gizli").val();
-				if ((g_adi.length > 1) && (g_sAdi.length > 1) && (g_telNo.length > 1) && (g_cKisa.length > 1) && (g_dKisa.length > 1)) {
+	<?php if (isset($_SESSION["kull"])): ?>
+		<script>
+			$(function() {
+				$("#kKaydet").click(function() {
+					var adi, sAdi, telNo, cKisa, dKisa;
+					adi = $("#adi").val();
+					sAdi = $("#sAdi").val();
+					telNo = $("#telNo").val();
+					cKisa = $("#cKisa").val();
+					dKisa = $("#dKisa").val();
 					$.ajax({
 						type: "POST",
 						url: "/kayit.php",
-						data: "session=<?php echo (isset($_SESSION["id"]) ? $_SESSION["id"] : hash('sha256', "kastamonu")); ?>&g_adi=" + g_adi + "&g_sAdi=" + g_sAdi + "&g_telNo=" + g_telNo + "&g_cKisa=" + g_cKisa + "&g_dKisa=" + g_dKisa + "&g_gizli=" + g_gizli,
+						data: "session=<?php echo (isset($_SESSION["id"]) ? $_SESSION["id"] : hash('sha256', "kastamonu")); ?>&adi=" + adi + "&sAdi=" + sAdi + "&telNo=" + telNo + "&cKisa=" + cKisa + "&dKisa=" + dKisa,
 						success: function(x) {
-							if (x == "true") {
-								location.reload();
+							if (x == 1) {
+								adi = $("#adi").val("");
+								sAdi = $("#sAdi").val("");
+								telNo = $("#telNo").val("");
+								cKisa = $("#cKisa").val("");
+								dKisa = $("#dKisa").val("");
+								window.location.reload();
+
 							} else {
-								$("#durum").val("Güncellenmedi!!!");
+								$("#durum4").text("Kayıt başarısız oldu !!!");
 							}
+
 						}
 					});
-				} else {
-					$("#durum5").text("Güncellenmedi!!!");
-				}
+				});
+				$("#g_guncelle").click(function() {
+					var g_adi, g_sAdi, g_telNo, g_cKisa, g_dKisa, g_gizli;
+					g_adi = $("#g_adi").val();
+					g_sAdi = $("#g_sAdi").val();
+					g_telNo = $("#g_telNo").val();
+					g_cKisa = $("#g_cKisa").val();
+					g_dKisa = $("#g_dKisa").val();
+					g_gizli = $("#g_gizli").val();
+					if ((g_adi.length > 1) && (g_sAdi.length > 1) && (g_telNo.length > 1) && (g_cKisa.length > 1) && (g_dKisa.length > 1)) {
+						$.ajax({
+							type: "POST",
+							url: "/kayit.php",
+							data: "session=<?php echo (isset($_SESSION["id"]) ? $_SESSION["id"] : hash('sha256', "kastamonu")); ?>&g_adi=" + g_adi + "&g_sAdi=" + g_sAdi + "&g_telNo=" + g_telNo + "&g_cKisa=" + g_cKisa + "&g_dKisa=" + g_dKisa + "&g_gizli=" + g_gizli,
+							success: function(x) {
+								if (x == "true") {
+									location.reload();
+								} else {
+									$("#durum").val("Güncellenmedi!!!");
+								}
+							}
+						});
+					} else {
+						$("#durum5").text("Güncellenmedi!!!");
+					}
+
+				});
 
 			});
-
-		});
-	</script>
+		</script>
+	<?php endif; ?>
 	<?php if (!isset($_SESSION["kull"])): ?>
 		<script>
 			// Sayfa yüklendiğinde oturum yoksa modalı otomatik aç
 			document.addEventListener("DOMContentLoaded", function() {
-				var myModal = new bootstrap.Modal(document.getElementById('exampleModal'));
+				var myModal = new bootstrap.Modal(document.getElementById('girisModal'));
 				myModal.show();
 			});
 		</script>

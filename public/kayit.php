@@ -30,8 +30,19 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
 		echo $db->noKaydet($adi, $sadi, $telNo, $cKisa, $dKisa);
 	}
 }
-if ($_SERVER['REQUEST_METHOD'] === 'GET' && is_numeric($_GET["id"])) {
+if ($_SERVER['REQUEST_METHOD'] === 'GET' && is_numeric($_GET["id"]) && isset($_GET["token"]) && $_GET["token"] === $_SESSION["token"]) {
+	$token = hash('sha256', time() . rand(1000, 9999));
+	if (isset($_SESSION["token"]) && $token !== $_SESSION["token"]) {
 
+		$_SESSION["token"] = $token;
+	}
+	$db = new Db();
+	if ($db->noSil($_GET["id"])) {
+		echo json_encode(["status" => "success", "message" => "Kayıt silindi."]);
+	}
+	return json_encode(["status" => "error", "message" => "Kayıt silinemedi."]);
+}
+if ($_SERVER['REQUEST_METHOD'] === 'GET' && is_numeric($_GET["id"])) {
 	$db = new Db();
 	echo json_encode($db->gGetir($_GET["id"]));
 }
