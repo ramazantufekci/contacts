@@ -2,9 +2,9 @@
 
 ## Uygulama ayarları
 
-> src/config/config.php dosyasını kendi veritabanınız için ayarlayın.
+> .env.example dosyasını kendi bilgierinizle güncelleyin.
 
-> yeni bir veritabanı oluşturup rehber.sql içeri aktarın.
+> Veritabanını migrate etmek için ```php migrate.php``` komutunu kullanın.
 
 > varsayılan kullanıcı ismi root şifre 123456
 
